@@ -227,6 +227,12 @@ button:disabled{
 
 <div class="balloons" id="balloons"></div>
 
+<!-- ÁUDIO: coloque o arquivo em /audio/osanjoscantam.mp3 -->
+<audio id="bgMusic" preload="auto" playsinline>
+  <source src="audio/osanjoscantam.mp3" type="audio/mpeg">
+  Seu navegador não suporta áudio HTML5.
+</audio>
+
 <div class="wrap">
 
   <div class="card">
@@ -276,10 +282,8 @@ const photos=[
 
 const SPOTIFY_URL = "https://open.spotify.com/track/65gLJGey4u4KFFqoC5fzFJ?si=ppYfg_K3SrGM4T2OTT-zPQ";
 
-/* ===== MENSAGEM (EXATAMENTE COMO VOCÊ ESCREVEU) ===== */
-const messageText = `Fala maaninho, hoje é teu aniversário e to passando pra te desejar tudo do bom e do melhor, quero te ver conquistando tudo que sempre sonhou e tendo a vida que planejou. Quero que você saiba que pode contar comigo pra tudo e mesmo a gente tendo muitas idéias que não se batem, tbm sabemos respeitar a ideia um do outro e acho isso incrível em ti. Você não sabe como tenho orgulho da pessoa que tu és e que vem se tornando dia a após dia, alguém que vem demonstrando enfrentar seus demônios internos e se tornando mais forte. Nem parece que esses meses atrás te vi acabado e tentando melhorar por um algo que nem se quer foi culpa sua e mesmo assim sentir que vc ainda carrega um pedaço desse fardo como quem não sabe como se soltar, mas saiba que pode contar comigo sempre que precisar e com o tempo essa cicatriz se fecha e por mais que eu não possa afirmar que tudo vai sumir, posso te garantir que vc é foda o suficiente pra entender que isso foi bom pro seu crescimento (por mais que poderia não ter acontecido) e vai te tornar a pessoa que vc precisa ser para alcançar todos os seus sonhos, use isso tudo como motivação e não como desculpas. Eu queria dizer que sou grato a tudo que vc vem feito por mim e por mais que eu não seja de me abrir com vc, quero que tire da sua cabeça que "me deve algo" por eu ter te ajudado na sua fase ruim, vc faz o msm por mim dia após dia sem nem se quer tocar nos meus problemas, obrigado por tornar minha vida mais divertida nesses últimos somente por ser exatamente como vc é. Você é um cara incrível e vai conquistar o mundo um dia e eu quero estar la pra aplaudir e te ver vencendo. Não sou um cara muito bom pra textos irmão, mas eu espero ter conseguido passar tudo que eu tinha que te passar com as minhas palavras, eu realmente escrevi isso do fundo do meu coração. Quero que saiba que eu te amo muito man e que pode contar comigo pra tudo que vier! gostaria de dedicar uma música pra você, ela acabou aparecendo pra mim nos aleatórios do Spotify e estava esperando o momento certo pra te entregar ela
-
-${SPOTIFY_URL}`;
+/* ===== MENSAGEM (INTEIRA, SEM LINK GIGANTE) ===== */
+const messageText = `Fala maaninho, hoje é teu aniversário e to passando pra te desejar tudo do bom e do melhor, quero te ver conquistando tudo que sempre sonhou e tendo a vida que planejou. Quero que você saiba que pode contar comigo pra tudo e mesmo a gente tendo muitas idéias que não se batem, tbm sabemos respeitar a ideia um do outro e acho isso incrível em ti. Você não sabe como tenho orgulho da pessoa que tu és e que vem se tornando dia a após dia, alguém que vem demonstrando enfrentar seus demônios internos e se tornando mais forte. Nem parece que esses meses atrás te vi acabado e tentando melhorar por um algo que nem se quer foi culpa sua e mesmo assim sentir que vc ainda carrega um pedaço desse fardo como quem não sabe como se soltar, mas saiba que pode contar comigo sempre que precisar e com o tempo essa cicatriz se fecha e por mais que eu não possa afirmar que tudo vai sumir, posso te garantir que vc é foda o suficiente pra entender que isso foi bom pro seu crescimento (por mais que poderia não ter acontecido) e vai te tornar a pessoa que vc precisa ser para alcançar todos os seus sonhos, use isso tudo como motivação e não como desculpas. Eu queria dizer que sou grato a tudo que vc vem feito por mim e por mais que eu não seja de me abrir com vc, quero que tire da sua cabeça que "me deve algo" por eu ter te ajudado na sua fase ruim, vc faz o msm por mim dia após dia sem nem se quer tocar nos meus problemas, obrigado por tornar minha vida mais divertida nesses últimos somente por ser exatamente como vc é. Você é um cara incrível e vai conquistar o mundo um dia e eu quero estar la pra aplaudir e te ver vencendo. Não sou um cara muito bom pra textos irmão, mas eu espero ter conseguido passar tudo que eu tinha que te passar com as minhas palavras, eu realmente escrevi isso do fundo do meu coração. Quero que saiba que eu te amo muito man e que pode contar comigo pra tudo que vier! gostaria de dedicar uma música pra você, ela acabou aparecendo pra mim nos aleatórios do Spotify e estava esperando o momento certo pra te entregar ela`;
 
 /* ===== CARROSSEL ===== */
 const slides=document.getElementById("slides");
@@ -357,20 +361,29 @@ function startBalloons(ms=8000){
 }
 
 /* ===== ENTRAR ===== */
-enterBtn.onclick=()=>{
+enterBtn.onclick=async ()=>{
   startBalloons(8000);
 
-  // Link do botão
+  // Link do botão Spotify (sem aparecer na mensagem)
   spotifyBtn.href = SPOTIFY_URL;
 
-  // Exibição “linha por linha” (por parágrafos)
+  // Tocar a música local (arquivo: audio/osanjoscantam.mp3)
+  const audio = document.getElementById("bgMusic");
+  try{
+    audio.currentTime = 0;
+    await audio.play();
+  }catch(e){
+    console.warn("Não foi possível tocar o áudio. Verifique se o arquivo existe em audio/osanjoscantam.mp3", e);
+  }
+
+  // Exibição “linha por linha”
   const msg=document.getElementById("msg");
   msg.innerHTML="";
 
-  // se o usuário não colocou quebras de linha duplas, a gente cria blocos menores automaticamente
+  // Se não tiver parágrafos (linhas em branco), quebra automaticamente em blocos menores
   const parts = messageText.includes("\n\n")
     ? messageText.split("\n\n")
-    : messageText.match(/.{1,260}(\s|$)/g) || [messageText];
+    : (messageText.match(/.{1,260}(\s|$)/g) || [messageText]);
 
   parts.forEach((p,i)=>{
     const el=document.createElement("p");
