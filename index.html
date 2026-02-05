@@ -91,7 +91,7 @@ button:disabled{
 }
 
 /* =========================
-   CARROSSEL (CORRIGIDO)
+   CARROSSEL (SEM CORTE 1:1)
    ========================= */
 
 .carousel{
@@ -166,6 +166,7 @@ button:disabled{
   padding:16px;
   border-radius:16px;
   white-space:pre-wrap;
+  line-height:1.6;
 }
 
 .spotify{
@@ -185,120 +186,160 @@ button:disabled{
 </head>
 
 <body>
-
 <div class="wrap">
 
-<div class="card">
-<h1>Contagem regressiva 🎂</h1>
-<p>Libera dia <b>05/02 às 00:00</b></p>
+  <div class="card">
+    <h1>Contagem regressiva 🎂</h1>
+    <p>Libera dia <b>05/02 às 00:00</b></p>
 
-<div class="timer">
-  <div class="tbox"><div class="num" id="d">00</div>Dias</div>
-  <div class="tbox"><div class="num" id="h">00</div>Horas</div>
-  <div class="tbox"><div class="num" id="m">00</div>Min</div>
-  <div class="tbox"><div class="num" id="s">00</div>Seg</div>
-</div>
+    <div class="timer">
+      <div class="tbox"><div class="num" id="d">00</div>Dias</div>
+      <div class="tbox"><div class="num" id="h">00</div>Horas</div>
+      <div class="tbox"><div class="num" id="m">00</div>Min</div>
+      <div class="tbox"><div class="num" id="s">00</div>Seg</div>
+    </div>
 
-<button id="enterBtn" disabled>🔒 Aguarde…</button>
-</div>
-
-<div class="card stage" id="stage">
-
-<h2>Fernando Kaynan Barbosa — 21 anos 🎉</h2>
-
-<div class="carousel">
-  <div class="slides" id="slides"></div>
-
-  <div class="controls">
-    <button class="ctrl" id="prev">‹</button>
-    <button class="ctrl" id="next">›</button>
+    <button id="enterBtn" disabled>🔒 Aguarde…</button>
   </div>
-</div>
 
-<div class="msg">
-irmão, mas eu espero ter conseguido passar tudo que eu tinha que te passar com as minhas palavras, eu realmente escrevi isso do fundo do meu coração.
+  <div class="card stage" id="stage">
+    <h2>Fernando Kaynan Barbosa — 21 anos 🎉</h2>
 
-Quero que saiba que eu te amo muito man e que pode contar comigo pra tudo que vier!
+    <div class="carousel">
+      <div class="slides" id="slides"></div>
 
-gostaria de dedicar uma música pra você, ela acabou aparecendo pra mim nos aleatórios do Spotify e estava esperando o momento certo pra te entregar ela
-</div>
+      <div class="controls">
+        <button class="ctrl" id="prev">‹</button>
+        <button class="ctrl" id="next">›</button>
+      </div>
+    </div>
 
-<div class="spotify">
-<a href="https://open.spotify.com/track/65gLJGey4u4KFFqoC5fzFJ?si=ppYfg_K3SrGM4T2OTT-zPQ" target="_blank">
-🎵 Abrir música no Spotify
-</a>
-</div>
+    <!-- A mensagem agora vem do JS (abaixo), pra garantir que aparece completa -->
+    <div class="msg" id="msg"></div>
 
-</div>
+    <div class="spotify">
+      <a id="spotifyLink" href="#" target="_blank" rel="noopener">
+        🎵 Abrir música no Spotify
+      </a>
+    </div>
+  </div>
+
 </div>
 
 <script>
-const photos=[
-"fotos/1.jpg",
-"fotos/2.jpg",
-"fotos/3.jpg",
-"fotos/4.jpg",
-"fotos/5.jpg",
-"fotos/6.jpg",
-"fotos/7.jpg",
-"fotos/8.jpg",
-"fotos/9.jpg"
+/* =========================
+   CONFIG
+   ========================= */
+const photos = [
+  "fotos/1.jpg",
+  "fotos/2.jpg",
+  "fotos/3.jpg",
+  "fotos/4.jpg",
+  "fotos/5.jpg",
+  "fotos/6.jpg",
+  "fotos/7.jpg",
+  "fotos/8.jpg",
+  "fotos/9.jpg"
 ];
 
-const slides=document.getElementById("slides");
-let index=0;
+const SPOTIFY_URL = "https://open.spotify.com/track/65gLJGey4u4KFFqoC5fzFJ?si=ppYfg_K3SrGM4T2OTT-zPQ";
 
-photos.forEach(src=>{
-  const s=document.createElement("div");
-  s.className="slide";
-  s.innerHTML=`
+/* =========================
+   MENSAGEM (REVISADA)
+   ========================= */
+const fullMessage =
+`Fala maaninho, hoje é teu aniversário e tô passando pra te desejar tudo do bom e do melhor. Quero te ver conquistando tudo que sempre sonhou e vivendo a vida que planejou.
+
+Quero que você saiba que pode contar comigo pra tudo. E mesmo a gente tendo muitas ideias que não se batem, a gente também sabe respeitar a visão um do outro — e eu acho isso incrível em ti.
+
+Você não sabe o orgulho que eu tenho da pessoa que tu és e do que vem se tornando dia após dia: alguém que vem enfrentando os próprios demônios internos e ficando mais forte.
+
+Nem parece que, meses atrás, eu te vi acabado, tentando melhorar por algo que nem sequer foi culpa sua… e, mesmo assim, eu sinto que às vezes tu ainda carrega um pedaço desse fardo, como quem não sabe como se soltar. Mas saiba que pode contar comigo sempre que precisar.
+
+E com o tempo essa cicatriz fecha. Por mais que eu não possa afirmar que tudo vai sumir, eu posso te garantir que tu é foda o suficiente pra entender que isso serviu pro teu crescimento (mesmo que eu também ache que não precisava ter acontecido). No fim, vai te tornar a pessoa que tu precisa ser pra alcançar todos os teus sonhos.
+
+Usa isso como motivação — e não como desculpa.
+
+Eu queria dizer que sou grato por tudo que tu vem fazendo por mim. E por mais que eu não seja de me abrir contigo, tira da tua cabeça que tu “me deve algo” por eu ter te ajudado na tua fase ruim.
+
+Tu faz o mesmo por mim dia após dia, sem nem sequer tocar nos meus problemas. Obrigado por tornar minha vida mais divertida nesses últimos tempos, só por ser exatamente como tu é.
+
+Tu é um cara incrível. Vai conquistar o mundo um dia, e eu quero estar lá pra aplaudir e te ver vencendo.
+
+Não sou muito bom com textos, irmão… mas eu espero ter conseguido passar tudo que eu tinha que te passar com as minhas palavras. Eu realmente escrevi isso do fundo do meu coração.
+
+Quero que saiba que eu te amo muito, man, e que pode contar comigo pra tudo que vier!
+
+Eu queria dedicar uma música pra você. Ela apareceu pra mim nos aleatórios do Spotify, e eu tava esperando o momento certo pra te entregar ela.`;
+
+/* =========================
+   CARROSSEL
+   ========================= */
+const slides = document.getElementById("slides");
+let index = 0;
+
+photos.forEach((src, i) => {
+  const s = document.createElement("div");
+  s.className = "slide";
+  s.innerHTML = `
     <div class="blur-bg" style="background-image:url('${src}')"></div>
-    <img src="${src}">
+    <img src="${src}" alt="Foto ${i+1}">
     <div class="fadeEdge"></div>
   `;
   slides.appendChild(s);
 });
 
 function show(i){
-  index=(i+photos.length)%photos.length;
-  slides.style.transform=`translateX(${-index*100}%)`;
+  index = (i + photos.length) % photos.length;
+  slides.style.transform = `translateX(${-index*100}%)`;
 }
+document.getElementById("prev").onclick = () => show(index - 1);
+document.getElementById("next").onclick = () => show(index + 1);
 
-document.getElementById("prev").onclick=()=>show(index-1);
-document.getElementById("next").onclick=()=>show(index+1);
+/* =========================
+   CONTAGEM
+   ========================= */
+const dEl = document.getElementById("d");
+const hEl = document.getElementById("h");
+const mEl = document.getElementById("m");
+const sEl = document.getElementById("s");
+const btn = document.getElementById("enterBtn");
+const stage = document.getElementById("stage");
 
-const dEl=document.getElementById("d");
-const hEl=document.getElementById("h");
-const mEl=document.getElementById("m");
-const sEl=document.getElementById("s");
-const btn=document.getElementById("enterBtn");
-const stage=document.getElementById("stage");
-
-const target=new Date(new Date().getFullYear(),1,5,0,0,0);
+const target = new Date(new Date().getFullYear(), 1, 5, 0, 0, 0);
 
 function tick(){
-  const now=new Date();
-  let diff=target-now;
+  const now = new Date();
+  let diff = target - now;
 
-  if(diff<=0){
-    dEl.textContent=hEl.textContent=mEl.textContent=sEl.textContent="00";
-    btn.disabled=false;
-    btn.textContent="🎉 Entrar";
+  if(diff <= 0){
+    dEl.textContent = hEl.textContent = mEl.textContent = sEl.textContent = "00";
+    btn.disabled = false;
+    btn.textContent = "🎉 Entrar";
     return;
   }
 
-  diff=Math.floor(diff/1000);
-  dEl.textContent=String(Math.floor(diff/86400)).padStart(2,"0");
-  hEl.textContent=String(Math.floor(diff%86400/3600)).padStart(2,"0");
-  mEl.textContent=String(Math.floor(diff%3600/60)).padStart(2,"0");
-  sEl.textContent=String(diff%60).padStart(2,"0");
+  diff = Math.floor(diff/1000);
+  dEl.textContent = String(Math.floor(diff/86400)).padStart(2,"0");
+  hEl.textContent = String(Math.floor((diff%86400)/3600)).padStart(2,"0");
+  mEl.textContent = String(Math.floor((diff%3600)/60)).padStart(2,"0");
+  sEl.textContent = String(diff%60).padStart(2,"0");
 }
-
-setInterval(tick,500);
+setInterval(tick, 500);
 tick();
 
-btn.onclick=()=>{
-  stage.style.display="block";
+/* =========================
+   ENTRAR
+   ========================= */
+btn.onclick = () => {
+  // injeta mensagem completa
+  document.getElementById("msg").textContent = fullMessage;
+
+  // link spotify
+  const a = document.getElementById("spotifyLink");
+  a.href = SPOTIFY_URL;
+
+  stage.style.display = "block";
   stage.scrollIntoView({behavior:"smooth"});
 };
 </script>
