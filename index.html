@@ -11,7 +11,7 @@
   --bg2:#1b0f2a;
   --text:#eef2ff;
   --muted:#b9c0ff;
-  --accent:#7c3aed;
+  --accent:#22c55e;
 }
 
 *{box-sizing:border-box}
@@ -38,10 +38,10 @@ body{
   border-radius:20px;
   padding:20px;
   box-shadow:0 20px 50px rgba(0,0,0,.4);
+  margin-bottom:20px;
 }
 
 h1,h2{margin:0 0 10px}
-p{color:var(--muted)}
 
 .timer{
   display:grid;
@@ -81,19 +81,9 @@ button:disabled{
 
 .stage{
   display:none;
-  margin-top:20px;
-  animation:fade .6s ease both;
 }
 
-@keyframes fade{
-  from{opacity:0;transform:translateY(10px)}
-  to{opacity:1;transform:none}
-}
-
-/* =========================
-   CARROSSEL (SEM CORTE 1:1)
-   ========================= */
-
+/* ===== CARROSSEL ===== */
 .carousel{
   position:relative;
   aspect-ratio:16/9;
@@ -114,7 +104,6 @@ button:disabled{
   position:relative;
 }
 
-/* FUNDO DESFOCADO */
 .blur-bg{
   position:absolute;
   inset:0;
@@ -124,20 +113,12 @@ button:disabled{
   transform:scale(1.2);
 }
 
-/* IMAGEM PRINCIPAL (SEM CORTE) */
 .slide img{
   position:relative;
   z-index:2;
   width:100%;
   height:100%;
   object-fit:contain;
-}
-
-.fadeEdge{
-  position:absolute;
-  inset:0;
-  background:linear-gradient(to top, rgba(0,0,0,.6), transparent 50%);
-  z-index:3;
 }
 
 .controls{
@@ -147,7 +128,6 @@ button:disabled{
   justify-content:space-between;
   align-items:center;
   padding:0 10px;
-  z-index:4;
 }
 
 .ctrl{
@@ -161,16 +141,41 @@ button:disabled{
   cursor:pointer;
 }
 
+/* ===== MENSAGEM ===== */
 .msg{
   background:rgba(255,255,255,.1);
   padding:16px;
   border-radius:16px;
-  white-space:pre-wrap;
-  line-height:1.6;
+  line-height:1.7;
 }
 
-.spotify{
+.msg p{
+  opacity:0;
+  transform:translateY(10px);
+  animation:fadeUp .6s ease forwards;
+  margin: 0 0 12px;
+}
+
+@keyframes fadeUp{
+  to{opacity:1;transform:none}
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
   margin-top:15px;
+}
+
+.copy-btn{
+  background:rgba(255,255,255,.15);
+  color:var(--text);
+  flex: 1 1 220px;
+}
+
+.copy-btn.copied{
+  background:var(--accent);
+  color:#06230f;
 }
 
 .spotify a{
@@ -182,15 +187,50 @@ button:disabled{
   font-weight:800;
   text-decoration:none;
 }
+
+/* ===== BALÕES ===== */
+.balloons{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:999;
+}
+
+.balloon{
+  position:absolute;
+  bottom:-80px;
+  width:40px;
+  height:55px;
+  border-radius:50%;
+  animation:floatUp linear forwards;
+}
+
+.balloon::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-12px;
+  width:2px;
+  height:20px;
+  background:rgba(255,255,255,.6);
+  transform:translateX(-50%);
+}
+
+@keyframes floatUp{
+  to{ transform:translateY(-120vh); }
+}
 </style>
 </head>
 
 <body>
+
+<div class="balloons" id="balloons"></div>
+
 <div class="wrap">
 
   <div class="card">
     <h1>Contagem regressiva 🎂</h1>
-    <p>Libera dia <b>05/02 às 00:00</b></p>
 
     <div class="timer">
       <div class="tbox"><div class="num" id="d">00</div>Dias</div>
@@ -207,140 +247,151 @@ button:disabled{
 
     <div class="carousel">
       <div class="slides" id="slides"></div>
-
       <div class="controls">
         <button class="ctrl" id="prev">‹</button>
         <button class="ctrl" id="next">›</button>
       </div>
     </div>
 
-    <!-- A mensagem agora vem do JS (abaixo), pra garantir que aparece completa -->
     <div class="msg" id="msg"></div>
 
-    <div class="spotify">
-      <a id="spotifyLink" href="#" target="_blank" rel="noopener">
-        🎵 Abrir música no Spotify
-      </a>
+    <div class="actions">
+      <button class="copy-btn" id="copyBtn">📋 Copiar mensagem</button>
+      <div class="spotify">
+        <a id="spotifyBtn" href="#" target="_blank" rel="noopener">
+          🎵 Abrir música no Spotify
+        </a>
+      </div>
     </div>
   </div>
 
 </div>
 
 <script>
-/* =========================
-   CONFIG
-   ========================= */
-const photos = [
-  "fotos/1.jpg",
-  "fotos/2.jpg",
-  "fotos/3.jpg",
-  "fotos/4.jpg",
-  "fotos/5.jpg",
-  "fotos/6.jpg",
-  "fotos/7.jpg",
-  "fotos/8.jpg",
-  "fotos/9.jpg"
+/* ===== FOTOS ===== */
+const photos=[
+  "fotos/1.jpg","fotos/2.jpg","fotos/3.jpg","fotos/4.jpg",
+  "fotos/5.jpg","fotos/6.jpg","fotos/7.jpg","fotos/8.jpg","fotos/9.jpg"
 ];
 
 const SPOTIFY_URL = "https://open.spotify.com/track/65gLJGey4u4KFFqoC5fzFJ?si=ppYfg_K3SrGM4T2OTT-zPQ";
 
-/* =========================
-   MENSAGEM (REVISADA)
-   ========================= */
-const fullMessage =
-`Fala maaninho, hoje é teu aniversário e tô passando pra te desejar tudo do bom e do melhor. Quero te ver conquistando tudo que sempre sonhou e vivendo a vida que planejou.
+/* ===== MENSAGEM (EXATAMENTE COMO VOCÊ ESCREVEU) ===== */
+const messageText = `Fala maaninho, hoje é teu aniversário e to passando pra te desejar tudo do bom e do melhor, quero te ver conquistando tudo que sempre sonhou e tendo a vida que planejou. Quero que você saiba que pode contar comigo pra tudo e mesmo a gente tendo muitas idéias que não se batem, tbm sabemos respeitar a ideia um do outro e acho isso incrível em ti. Você não sabe como tenho orgulho da pessoa que tu és e que vem se tornando dia a após dia, alguém que vem demonstrando enfrentar seus demônios internos e se tornando mais forte. Nem parece que esses meses atrás te vi acabado e tentando melhorar por um algo que nem se quer foi culpa sua e mesmo assim sentir que vc ainda carrega um pedaço desse fardo como quem não sabe como se soltar, mas saiba que pode contar comigo sempre que precisar e com o tempo essa cicatriz se fecha e por mais que eu não possa afirmar que tudo vai sumir, posso te garantir que vc é foda o suficiente pra entender que isso foi bom pro seu crescimento (por mais que poderia não ter acontecido) e vai te tornar a pessoa que vc precisa ser para alcançar todos os seus sonhos, use isso tudo como motivação e não como desculpas. Eu queria dizer que sou grato a tudo que vc vem feito por mim e por mais que eu não seja de me abrir com vc, quero que tire da sua cabeça que "me deve algo" por eu ter te ajudado na sua fase ruim, vc faz o msm por mim dia após dia sem nem se quer tocar nos meus problemas, obrigado por tornar minha vida mais divertida nesses últimos somente por ser exatamente como vc é. Você é um cara incrível e vai conquistar o mundo um dia e eu quero estar la pra aplaudir e te ver vencendo. Não sou um cara muito bom pra textos irmão, mas eu espero ter conseguido passar tudo que eu tinha que te passar com as minhas palavras, eu realmente escrevi isso do fundo do meu coração. Quero que saiba que eu te amo muito man e que pode contar comigo pra tudo que vier! gostaria de dedicar uma música pra você, ela acabou aparecendo pra mim nos aleatórios do Spotify e estava esperando o momento certo pra te entregar ela
 
-Quero que você saiba que pode contar comigo pra tudo. E mesmo a gente tendo muitas ideias que não se batem, a gente também sabe respeitar a visão um do outro — e eu acho isso incrível em ti.
+${SPOTIFY_URL}`;
 
-Você não sabe o orgulho que eu tenho da pessoa que tu és e do que vem se tornando dia após dia: alguém que vem enfrentando os próprios demônios internos e ficando mais forte.
+/* ===== CARROSSEL ===== */
+const slides=document.getElementById("slides");
+let index=0;
 
-Nem parece que, meses atrás, eu te vi acabado, tentando melhorar por algo que nem sequer foi culpa sua… e, mesmo assim, eu sinto que às vezes tu ainda carrega um pedaço desse fardo, como quem não sabe como se soltar. Mas saiba que pode contar comigo sempre que precisar.
-
-E com o tempo essa cicatriz fecha. Por mais que eu não possa afirmar que tudo vai sumir, eu posso te garantir que tu é foda o suficiente pra entender que isso serviu pro teu crescimento (mesmo que eu também ache que não precisava ter acontecido). No fim, vai te tornar a pessoa que tu precisa ser pra alcançar todos os teus sonhos.
-
-Usa isso como motivação — e não como desculpa.
-
-Eu queria dizer que sou grato por tudo que tu vem fazendo por mim. E por mais que eu não seja de me abrir contigo, tira da tua cabeça que tu “me deve algo” por eu ter te ajudado na tua fase ruim.
-
-Tu faz o mesmo por mim dia após dia, sem nem sequer tocar nos meus problemas. Obrigado por tornar minha vida mais divertida nesses últimos tempos, só por ser exatamente como tu é.
-
-Tu é um cara incrível. Vai conquistar o mundo um dia, e eu quero estar lá pra aplaudir e te ver vencendo.
-
-Não sou muito bom com textos, irmão… mas eu espero ter conseguido passar tudo que eu tinha que te passar com as minhas palavras. Eu realmente escrevi isso do fundo do meu coração.
-
-Quero que saiba que eu te amo muito, man, e que pode contar comigo pra tudo que vier!
-
-Eu queria dedicar uma música pra você. Ela apareceu pra mim nos aleatórios do Spotify, e eu tava esperando o momento certo pra te entregar ela.`;
-
-/* =========================
-   CARROSSEL
-   ========================= */
-const slides = document.getElementById("slides");
-let index = 0;
-
-photos.forEach((src, i) => {
-  const s = document.createElement("div");
-  s.className = "slide";
-  s.innerHTML = `
+photos.forEach((src,i)=>{
+  const s=document.createElement("div");
+  s.className="slide";
+  s.innerHTML=`
     <div class="blur-bg" style="background-image:url('${src}')"></div>
     <img src="${src}" alt="Foto ${i+1}">
-    <div class="fadeEdge"></div>
   `;
   slides.appendChild(s);
 });
 
 function show(i){
-  index = (i + photos.length) % photos.length;
-  slides.style.transform = `translateX(${-index*100}%)`;
+  index=(i+photos.length)%photos.length;
+  slides.style.transform=`translateX(${-index*100}%)`;
 }
-document.getElementById("prev").onclick = () => show(index - 1);
-document.getElementById("next").onclick = () => show(index + 1);
+document.getElementById("prev").onclick=()=>show(index-1);
+document.getElementById("next").onclick=()=>show(index+1);
 
-/* =========================
-   CONTAGEM
-   ========================= */
-const dEl = document.getElementById("d");
-const hEl = document.getElementById("h");
-const mEl = document.getElementById("m");
-const sEl = document.getElementById("s");
-const btn = document.getElementById("enterBtn");
-const stage = document.getElementById("stage");
-
-const target = new Date(new Date().getFullYear(), 1, 5, 0, 0, 0);
+/* ===== CONTAGEM ===== */
+const target=new Date(new Date().getFullYear(),1,5,0,0,0);
 
 function tick(){
-  const now = new Date();
-  let diff = target - now;
+  const now=new Date();
+  let diff=target-now;
 
-  if(diff <= 0){
-    dEl.textContent = hEl.textContent = mEl.textContent = sEl.textContent = "00";
-    btn.disabled = false;
-    btn.textContent = "🎉 Entrar";
+  if(diff<=0){
+    d.textContent=h.textContent=m.textContent=s.textContent="00";
+    enterBtn.disabled=false;
+    enterBtn.textContent="🎉 Entrar";
     return;
   }
 
-  diff = Math.floor(diff/1000);
-  dEl.textContent = String(Math.floor(diff/86400)).padStart(2,"0");
-  hEl.textContent = String(Math.floor((diff%86400)/3600)).padStart(2,"0");
-  mEl.textContent = String(Math.floor((diff%3600)/60)).padStart(2,"0");
-  sEl.textContent = String(diff%60).padStart(2,"0");
+  diff=Math.floor(diff/1000);
+  d.textContent=String(diff/86400|0).padStart(2,"0");
+  h.textContent=String(diff%86400/3600|0).padStart(2,"0");
+  m.textContent=String(diff%3600/60|0).padStart(2,"0");
+  s.textContent=String(diff%60).padStart(2,"0");
 }
-setInterval(tick, 500);
+setInterval(tick,500);
 tick();
 
-/* =========================
-   ENTRAR
-   ========================= */
-btn.onclick = () => {
-  // injeta mensagem completa
-  document.getElementById("msg").textContent = fullMessage;
+/* ===== BALÕES ===== */
+const balloonsWrap=document.getElementById("balloons");
+function rand(min,max){return Math.random()*(max-min)+min;}
 
-  // link spotify
-  const a = document.getElementById("spotifyLink");
-  a.href = SPOTIFY_URL;
+function createBalloon(){
+  const b=document.createElement("div");
+  b.className="balloon";
+  b.style.left=rand(5,95)+"vw";
 
-  stage.style.display = "block";
+  const w=rand(30,55);
+  b.style.width=w+"px";
+  b.style.height=(w*1.3)+"px";
+  b.style.animationDuration=rand(6,10)+"s";
+
+  const hue=Math.floor(rand(0,360));
+  b.style.background=`linear-gradient(180deg,
+    hsla(${hue},90%,70%,.95),
+    hsla(${hue},90%,55%,.95))`;
+
+  b.addEventListener("animationend",()=>b.remove());
+  balloonsWrap.appendChild(b);
+}
+
+function startBalloons(ms=8000){
+  const start=Date.now();
+  const interval=setInterval(()=>{
+    for(let i=0;i<3;i++) createBalloon();
+    if(Date.now()-start>ms) clearInterval(interval);
+  },150);
+}
+
+/* ===== ENTRAR ===== */
+enterBtn.onclick=()=>{
+  startBalloons(8000);
+
+  // Link do botão
+  spotifyBtn.href = SPOTIFY_URL;
+
+  // Exibição “linha por linha” (por parágrafos)
+  const msg=document.getElementById("msg");
+  msg.innerHTML="";
+
+  // se o usuário não colocou quebras de linha duplas, a gente cria blocos menores automaticamente
+  const parts = messageText.includes("\n\n")
+    ? messageText.split("\n\n")
+    : messageText.match(/.{1,260}(\s|$)/g) || [messageText];
+
+  parts.forEach((p,i)=>{
+    const el=document.createElement("p");
+    el.textContent=p.trim();
+    el.style.animationDelay=`${i*0.35}s`;
+    msg.appendChild(el);
+  });
+
+  stage.style.display="block";
   stage.scrollIntoView({behavior:"smooth"});
+};
+
+/* ===== COPIAR ===== */
+copyBtn.onclick=()=>{
+  navigator.clipboard.writeText(messageText);
+  copyBtn.textContent="💙 Mensagem copiada!";
+  copyBtn.classList.add("copied");
+  setTimeout(()=>{
+    copyBtn.textContent="📋 Copiar mensagem";
+    copyBtn.classList.remove("copied");
+  },2000);
 };
 </script>
 
